@@ -101,7 +101,7 @@ Stablo unos(Stablo root)
 
 	case 5:
 		printf("\nLEVEL ORDER:");
-		levelorder(root);
+		PrintLevelorder(root);
 		printf("\n");
 		return root;
 
