@@ -19,7 +19,7 @@ int preorder(Stablo);
 int postorder(Stablo);
 int PrintLevelorder(Stablo);
 int PrintLevel(Stablo, int);
-int Height(Stablo Root);
+int Height(Stablo);
 Stablo findElement(Stablo, int);
 Stablo findMinElement(Stablo);
 Stablo izbrisiElement(const Stablo, Stablo);
