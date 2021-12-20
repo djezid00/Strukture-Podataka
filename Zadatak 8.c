@@ -41,10 +41,20 @@ int main()
 
 Stablo noviEl(Stablo root,int Broj)
 {
-	Stablo novi = (Stablo)malloc(sizeof(Stablo));	
+	Stablo novi = (Stablo)malloc(sizeof(Stablo));
+	if (!Stablo novi)
+	{
+		perror("Ne mogu alocirati memoriju!\n");
+		return NULL;
+	}
 	novi = root;
 	if (novi == NULL) {
 		Stablo novi = (Stablo)malloc(sizeof(Stablo));
+		if (!Stablo novi)
+	{
+		perror("Ne mogu alocirati memoriju!\n");
+		return NULL;
+	}
 		novi->el = Broj;
 		novi->lijevo = NULL;
 		novi->desno = NULL;
