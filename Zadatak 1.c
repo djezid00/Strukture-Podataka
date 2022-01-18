@@ -1,140 +1,125 @@
-#pragma warning(disable : 4996)
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_SIZE (128)
-#define MAX_LINE (1024)//za windows max line
+#define MAX_LINE (1024)
 #define MAX_BODOVI (20)
 
-
-typedef struct _student{
-	char ime [MAX_SIZE];
-	char prezime [MAX_SIZE];
-	double bodovi;
+typedef struct {
+	char ime[MAX_SIZE];
+	char prezime[MAX_SIZE];
+	int bodovi;
 }student;
 
-int procitajBrojRedakaIzDatoteke(char* nazivDatoteke);
-student* alocirajProcitajIzDatoteke(int brojStudenata, char*nazivDatoteke);
-student najveciBrojBodova(student* studenti, int BrojStudenata);
-void ispisStudenata(int BrojStudenata, char* nazivDatoteka);
+int BrojStudenata(char* ime_datoteke);
+student* Alokacija(int br_st,char* ime_datoteke);
+student MaxBodovi(student* studenti,int br_st);
+void Ispis(int br_st,student* studenti);
+
 
 int main()
 {
 	char* studenti = NULL;
-	int br_st = 0;
 	int brojac = 0;
+	int br_st = 0;
 	student* stud = NULL;
-	student s = {0};
+	student s;
 
-	br_st = procitajBrojRedakaIzDatoteke(studenti);
-	stud = alocirajProcitajIzDatoteke(br_st, studenti);
-	s = najveciBrojBodova(stud, br_st);
-	ispisStudenata(br_st, studenti);
+	br_st = BrojStudenata(studenti);
+	stud = Alokacija(br_st, studenti);
+	s = MaxBodovi(stud,br_st);
 
+	Ispis(br_st,stud);
 	
-	return 0;
+
+	return EXIT_SUCCESS;
 }
 
-int procitajBrojRedakaIzDatoteke(char* nazivDatoteke)
+
+int BrojStudenata(char* ime_datoteke)
 {
+	char BUFFER[MAX_LINE] = { 0 };
+	FILE* datoteka = NULL;
 	int brojac = 0;
-	FILE* datoteka = NULL;//sve datoteke moraju bit inicijalizirane,makar na nulu
-	char buffer[MAX_LINE] = {0};//niz je pa je {0}
-
-
-	datoteka = fopen(nazivDatoteke, "r");
+	datoteka = fopen("studenti.txt","r");
 
 	if (!datoteka)
 	{
-		printf("Neuspjesno otvaranje datoteke!\n");
-		return -1;
+		printf("Datoteka nije otovorena!");
+		return;
 	}
 
-	while (!feof(datoteka))
-	{
-		fgets(buffer, MAX_LINE, datoteka);
+	while (!feof(datoteka)) {
+		fgets(BUFFER,MAX_LINE,datoteka);
 		brojac++;
 	}
+	fclose(datoteka);
 
-	fclose(datoteka);//obavezno zatvaranje 
+
 	return brojac;
-
-
 }
 
-student* alocirajProcitajIzDatoteke(int brojStudenata, char* nazivDatoteke)
+student* Alokacija(int br_st, char* ime_datoteke)
 {
-	int brojac = 0;
-	FILE* datoteka = NULL;
+	int brojac=0;
 	student* studenti = NULL;
+	FILE* datoteka = NULL;
+	datoteka = fopen("studenti.txt","r");
+	studenti = (student*)malloc(br_st * (sizeof(student)));	
 
-	studenti = (student*)malloc(brojStudenata * sizeof(student));
-	
 	if (!datoteka)
 	{
-		printf("Neuspjesna alokacija memorije");
+		printf("Datoteka nije otvorena!");
+		return NULL;
+	}
+	if (!studenti)
+	{
+		printf("Greska alociranja!");
 		return NULL;
 	}
 
-
-	datoteka = fopen(nazivDatoteke, "r");
-
-	if (!datoteka)
-	{
-		printf("Neuspjesno otvaranje datoteke!\n");
-		return 0;
-	}
-
-
 	while (!feof(datoteka))
 	{
-		fscanf(datoteka, " %s %s %lf", //gap ispred prvog %s,da se ne pokupi enter (umjesto fflush(stdin))
-			studenti[brojac].ime,
-			studenti[brojac].prezime,
-			&studenti[brojac].bodovi);
+		fscanf(datoteka," %s %s %lf",studenti[brojac].ime,studenti[brojac].prezime,&studenti[brojac].bodovi);
 		brojac++;
 	}
 
 	fclose(datoteka);
 
-	return studenti;
 
+	return studenti;
 }
 
-student najveciBrojBodova(student* studenti, int BrojStudenata)
+student MaxBodovi(student* studenti, int br_st)
 {
-	int brojac = 0;
 	student temp = { 0 };
+	int i = 0;
 
 	temp = studenti[0];
-	for (brojac = 1; brojac < BrojStudenata; brojac++)
-		if (temp.bodovi < studenti[brojac].bodovi)
-			temp = studenti[brojac];
-
-	return temp;
-
-}
-
-void ispisStudenata(int BrojStudenata, char* nazivDatoteka)
-{
-	int brojac = 0;
-	student* stud = NULL;
-	student s = { 0 };
-
-
-	printf("Ime i Prezime\tApsolutan broj bodova\tRelativan broj bodova\n\n");
-
-	for (brojac; brojac < BrojStudenata; brojac++)
+	for (i=1; i < br_st; i++) 
 	{
-		printf("%s\t%s\t%.2lf%\t%.2lf\n", 
-			stud[brojac].ime, 
-			stud[brojac].prezime, 
-			stud[brojac].bodovi / MAX_BODOVI * 100, 
-			(stud[brojac].bodovi / s.bodovi) * 100);
+		if (temp.bodovi < studenti[i].bodovi)
+			temp = studenti[i];
 	}
 
+	return temp;
+}
 
-	return;
+void Ispis(int br_st, student* studenti)
+{
+	int i = 0;
+	double relativni = 0;
+
+
+
+	while (i < br_st)
+	{
+		relativni = (studenti[i].bodovi / MAX_BODOVI) * 100;
+		printf("\nIme: %s \nPrezime: %s \nApsolutni broj bodova: %.2lf \nRelativni broj bodova: %.2lf \n\n", studenti[i].ime, studenti[i].prezime, studenti[i].bodovi, relativni);
+		i++;
+	}
+
 }
 
 
