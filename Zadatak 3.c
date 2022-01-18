@@ -1,182 +1,303 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX_SIZE (100)
 
-struct _Person;
-typedef struct _Person* Position;
+#define MAX_SIZE (50)
+#define MAX_LINE (1024)
+
+typedef struct _Person;
+typedef struct _Person* Pozicija;
 typedef struct _Person {
-    char name[MAX_SIZE];
-    char surname[MAX_SIZE];
-    int birthYear;
-    Position next;
+	char* name[MAX_SIZE];
+	char* surname[MAX_SIZE];
+	int birthYear;
+	Pozicija next;
 }Person;
 
+int ReadFromFile(Pozicija head, char* filename);
+Pozicija CreatePerson(char* name, char* surname, int birthYear);
+int SortList(Pozicija head,Pozicija newPerson);
+int InsertAfter(Pozicija head, Pozicija newPerson);
+int PrintList(Pozicija first);
+int AddElement(Pozicija head, int n);
+Pozicija FindBefore(Pozicija head, int n);
+int WriteInFile(Pozicija head, char* filename);
+int FreeAll(Pozicija head);
 
-Position stvori(char* name, char* surname, int birthYear);
-int sortiraj(Position head, Position newPerson);
-int umetni_nakon(Position position, Position newPerson);
-int dodaj(Position head, int position);
-Position pronadji(Position first, int position);
-int ucitaj_iz_file(Position head, char* fileName);
-int upis_u_file(Position head, char* fileName);
-int FreeAll(Position head);
-int ispis(Position first);
+
 
 int main()
 {
-    Person = { head.next = NULL, 
-        head.name = {0}, 
-        head.surname = {0},
-        head.birthYear = 0 
-    };
-    char ime_dat[MAX_SIZE] = { 0 };
-    int a = 0;
+	Person zeroth = { .next = NULL, .name = {0}, .surname = {0}, .birthYear=0 };
+	Pozicija head = &zeroth;
+	char filename = { 0 };
+	int n = 0;
 
-    printf("Naziv datoteke za citanje?\n");
-    scanf(" %s", ime_dat);
-    ucitaj_iz_file(&head, ime_dat);
+	printf("From what file you want to read data:\n");
+	scanf(" %s",filename);
+	ReadFromFile(head,filename);
 
-    printf("Ispis nakon sortiranja:\n");
-    ispis(head.next);
+	printf("Print after reading and sorting elements:\n");
+	PrintList(head->next);
 
-    printf("Nakon kojeg elementa zelite dodati element?\n");
-    scanf(" %d", &a);
-    dodaj(&head, a);
+	printf("After what element do you want to add an element?\n");
+	scanf(" %d", &n);
+	AddElement(head, n);
+	PrintList(head->next);
 
-    printf("Prije kojeg elementa elite dodati element\n");
-    scanf(" %d", &a);
-    dodaj(&head, a - 1);
 
-    printf("Naziv datoteke za upis podataka?\n");
-    scanf(" %s", ime_dat);
-    upis_u_file(&head, ime_dat);
+	printf("Before what element do you want to add an element?\n");
+	scanf(" %d", &n);
+	AddElement(head, n - 1);
+	PrintList(head->next);
 
-    return EXIT_SUCCESS;
+	WriteInFile(head, filename);
+
+	FreeAll(head);
+
+
+
+
+
+
+	return EXIT_SUCCESS;
 }
 
-
-Position stvori(char* name, char* surname, int birthYear)
+int ReadFromFile(Pozicija head, char* filename)
 {
-    Position osoba = NULL;
+	Pozicija newPerson = NULL;
+	char* name[MAX_SIZE] = { 0 };
+	char* surname[MAX_SIZE] = { 0 };
+	int birthYear = 0;
+	char* BUFFER[MAX_SIZE] = { 0 };
 
-    osoba = (Position)malloc(sizeof(Person));
-    if (!osoba)
-    {
-        printf("GRESKA ALOCIRANJA!\n");
-        return NULL;
-    }
+	FILE* fp = NULL;
+	fp = fopen(filename,"r");
 
-    strcpy(osoba->name, name);
-    strcpy(osoba->surname, surname);
-    osoba->birthYear = birthYear;
-    osoba->next = NULL;
+	if (!fp)
+	{
+		printf("Datoteka nije otvorena!\n");
+		return -1;
+	}
+
+	while (!feof(fp))
+	{
+		fgets(BUFFER,MAX_LINE,fp);
+		if (sscanf(BUFFER, " %s %s %d", name, surname, &birthYear) == 3)
+		{
+			newPerson = CreatePerson(name,surname,birthYear);
+			SortList(head, newPerson);
+		}
+
+	}
+	fclose(fp);
 
 
-    return osoba;
+	return EXIT_SUCCESS;
 }
 
-int ucitaj_iz_file(Position head, char* ime_dat)
+Pozicija CreatePerson(char* name, char* surname, int birthYear)
 {
-    Position osoba = NULL;
-    FILE* fp = fopen(ime_dat, "r");
-    char buffer[MAX_SIZE] = { 0 };
-    char name[MAX_SIZE] = { 0 };
-    char surname[MAX_SIZE] = { 0 };
-    int birthYear = 0;
+	Pozicija newPerson = NULL;
 
-    if (!fp)
-    {
-        printf("Datoteka ne postoji!\n");
-        return -1;
-    }
+	newPerson = (Pozicija)malloc(sizeof(Person));
 
-    while (!feof(fp))
-    {
-        fgets(buffer, 1024, fp);
-        if (scanf(buffer, " %s %s %d", name, surname, &birthYear) == 3)
-        {
-            osoba = stvori(name, surname, birthYear);
-            sortiraj(head, osoba);
-        }
-    }
+	if (!newPerson)
+	{
+		perror("Allocation error!\n");
+		return NULL;
+	}
 
-    fclose(fp);
+	strcpy(newPerson->name,name);
+	strcpy(newPerson->surname,surname);
+	newPerson->birthYear = birthYear;
+	newPerson->next = NULL;
 
-    return EXIT_SUCCESS;
+
+	return newPerson;
 }
 
-int umetni_nakon(Position position, Position osoba)
+int SortList(Pozicija head, Pozicija newPerson)
 {
-    osoba->next = position->next;
-    position->next = osoba;
+	Pozicija temp = head->next;
 
-    return EXIT_SUCCESS;
+	if (!temp)
+	{
+		InsertAfter(head, newPerson);
+	}
+
+	else if (temp->next)
+	{
+		if (strcmp(newPerson->surname, temp->surname) >= 0)
+		{
+			while (temp->next)
+			{
+				if (strcmp(newPerson->surname, temp->surname) >= 0 && strcmp(newPerson->surname, temp->next->surname) < 0)
+				{
+					InsertAfter(temp,newPerson);
+					return EXIT_SUCCESS;
+				}
+				temp = temp->next;
+			}
+			if (!temp->next)
+			{
+				InsertAfter(temp,newPerson);
+			}
+		}
+		else
+		{
+			InsertAfter(head,newPerson);
+		}
+
+	}
+
+
+	else
+	{
+		if (strcmp(newPerson->surname, temp->surname) >= 0)
+		{
+			InsertAfter(temp, newPerson);
+		}
+		else
+		{
+			InsertAfter(head, newPerson);
+		}
+	}
+
+
+	return EXIT_SUCCESS;
 }
 
-int dodaj(Position head, int position)
+int InsertAfter(Pozicija head, Pozicija newPerson)
 {
-    Position personBefore = NULL;
-    Position osoba = NULL;
-    char name[MAX_SIZE] = { 0 };
-    char surname[MAX_SIZE] = { 0 };
-    int birthYear = 0;
+	newPerson->next = head->next;
+	head->next = newPerson;
 
-   
-
-    personBefore = pronadji(head, position);
-
-
-    scanf(" %s %s %d", name, surname, &birthYear);
-    osoba = stvori(name, surname, birthYear);
-
-    umetni_nakon(personBefore, osoba);
-
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
 
-Position pronadji(Position head, int position)
+int PrintList(Pozicija first)
 {
-    Position temp = head;
+	Pozicija temp = first;
 
-    while (position)
-    {
-        temp = temp->next;
-        if (!temp->next)
-        {
-            return NULL;
-        }
-        position--;
-    }
+	while (temp)
+	{
 
-    return temp;
+
+		printf("IME: %s", temp->name);
+		printf("PREZIME: %s", temp->surname);
+		printf("GODINA RODENJA: %d", &temp->birthYear);
+
+
+		temp = temp->next;
+
+	}
+
+
+	return EXIT_SUCCESS;
 }
 
-int upis_u_file(Position head, char* ime_dat)
+int AddElement(Pozicija head, int n)
 {
-    Position temp = head;
-    FILE* fp = fopen(ime_dat, "w");
-    
-    while (temp->next)
-    {
-        temp = temp->next;
-        fprintf(fp, "%s\t %s\t %d\t\n", temp->name, temp->surname, temp->birthYear);
-    }
+	Pozicija personBefore = NULL;
+	Pozicija newPerson = NULL;
+	char* name[MAX_SIZE] = { 0 };
+	char* surname[MAX_SIZE] = { 0 };
+	int birthYear = 0;
 
-    fclose(fp);
+	if (n < 0)
+	{
+		printf("Illegal value!");
+		return EXIT_SUCCESS;
+	}
 
-    return EXIT_SUCCESS;
+	personBefore = FindBefore(head, n);
+
+	if (!personBefore)
+	{
+		perror("Element doesn't exist!\n");
+		return NULL;
+	}
+
+	printf("IME:");
+	scanf(" %s",name);
+	printf("PREZIME:");
+	scanf(" %s", surname);
+	printf("GODINA RODJENA:");
+	scanf(" %d", &birthYear);
+
+	newPerson = CreatePerson(name,surname,birthYear);
+
+	InsertAfter(personBefore,newPerson);
+
+
+
+	return EXIT_SUCCESS;
 }
 
-int ispis(Position first)
+
+Pozicija FindBefore(Pozicija head, int n)
 {
-    Position temp = first;
-    while (temp)
-    {
-        printf("Ime: %s\t, Prezime: %s\t, Godina: %d\t\n", temp->name, temp->surname, temp->birthYear);
-        temp = temp->next;
-    }
+	Pozicija temp = head;
 
-    return EXIT_SUCCESS;
+	while (n)
+	{
+		temp = temp->next;
+		if (!temp->next)
+		{
+			return NULL;
+		}
+		n--;
+	}
+
+
+	return temp;
 }
+
+int WriteInFile(Pozicija head, char* filename)
+{
+	Pozicija temp = head;
+	FILE* fp = NULL;
+	fp = fopen(filename, "w");
+
+	if (!fp)
+	{
+		printf("Can't open a file!");
+		return -1;
+	}
+
+	while (temp->next)
+	{
+		fprintf(fp," IME:%s\tPREZIME:%s\tGODINA RODJENA:%d\n",temp->name,temp->surname,temp->birthYear);
+		temp = temp->next;
+	}
+	fclose(fp);
+
+
+	return EXIT_SUCCESS;
+}
+
+int FreeAll(Pozicija head)
+{
+	Pozicija temp1 = head;
+	Pozicija temp2 = NULL;
+
+	while (temp1->next)
+	{
+		temp2 = temp1->next;
+		temp1->next = temp2->next;
+		free(temp2);
+	}
+	
+
+	return EXIT_SUCCESS;
+}
+
+
+
+
+
+
+
+
 
