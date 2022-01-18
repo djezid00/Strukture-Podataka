@@ -44,7 +44,7 @@ int main()
 
 Stablo noviEl(Stablo root, int Broj)
 {
-	
+	Stablo novi = (Stablo)malloc(sizeof(Stablo));
 	novi = root;
 	if (novi == NULL) {
 		Stablo novi = (Stablo)malloc(sizeof(Stablo));
@@ -181,7 +181,7 @@ int PrintLevel(Stablo Root, int level)
 
 	else if (level > 1)
 	{
-		PrintLevel(Root->lijevo,level - 1);
+		PrintLevel(Root->lijevo, level - 1);
 		PrintLevel(Root->desno, level - 1);
 	}
 
