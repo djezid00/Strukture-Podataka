@@ -1,112 +1,275 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define STRMAX 1024
+#define MAX_SIZE (50)
 
-typedef struct _person {
-    char name[STRMAX];
-    char surname[STRMAX];
-    int birthYear;
-    struct _person* next;
-} Person;
+struct _Person;
+typedef struct _Person* Position;
+typedef struct _Person {
+	char ime[MAX_SIZE];
+	char prezime[MAX_SIZE];
+	int godine;
+	Position next;
+}Person;
 
-int prependList(Person* HEAD, Person* element);
-int insertLast(Person* HEAD, Person* element);
-int print(Person* HEAD);
-Person* findElement(Person* HEAD, char* prezime);
-int removeElement(Person* HEAD, Person* element);
-Person* findLastElement(Person* HEAD);
-Person* findPrevoius(Person* HEAD, Person* element);
+int PrependList(Position head, char* ime, char* prezime, int godine);
+Position CreatePerson(char* ime, char* prezime, int godine);
+int InsertAfter(Position head, Position newPerson);
+int PrintList(Position head);
+int AppendList(Position head, char* ime, char* prezime, int godine);
+Position FindLast(Position head);
+Position FindBySurname(Position head, char* prezime);
+int DeleteAfter(Position head,int n);
+Position FindPrevious(Position head, int poz);
+int DeleteAll(Position head);
 
 
-int main(void)
+int main(int argc, char** argv)
 {
-    Person* HEAD;
-    int status = 0;
-    HEAD = (Person*)malloc(sizeof(Person));
-    if (!HEAD)
-        return -1;
-    HEAD->next = NULL;
+	Person zeroth = { .next = NULL, .ime = { 0 }, .prezime = {0}, .godine = 0 };
+	Position head = &zeroth;
+	int br_osoba=0, godine=0;
+	char ime[MAX_SIZE] = { 0 }, prezime[MAX_SIZE] = { 0 };
+	Position surname = NULL;
 
-    return 0;
+	printf("Koliko osoba zelite unijeti na pocetku:");
+	scanf(" %d",&br_osoba);
+	printf("Upisite osobe:\n");
+
+	while (br_osoba)
+	{
+		printf("Ime:");
+		scanf(" %s", ime);
+		printf("Prezime:");
+		scanf(" %s", prezime);
+		printf("Godina rodenja:");
+		scanf(" %d",&godine);
+		PrependList(head,ime,prezime,godine);
+		br_osoba--;
+	}
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	printf("Ispis osoba nakon dodavanja na pocetku:\n");
+	PrintList(head->next);
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+
+
+	printf("Koliko osoba zelite unijeti na kraj:");
+	scanf(" %d", &br_osoba);
+	printf("Upisite osobe:\n");
+
+	while (br_osoba)
+	{
+		printf("Ime:");
+		scanf(" %s", ime);
+		printf("Prezime:");
+		scanf(" %s", prezime);
+		printf("Godina rodenja:");
+		scanf(" %d", &godine);
+		AppendList(head, ime, prezime, godine);
+		br_osoba--;
+	}
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	printf("Ispis osoba nakon dodavanja na kraj:\n");
+	PrintList(head->next);
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+
+	printf("Unesite prezime osobe koju zelite naci:");
+	scanf(" %s", prezime);
+	surname = FindBySurname(head->next,prezime);
+
+	if (!surname)
+	{
+		printf("Osoba ne postoji!");
+	}
+	else
+	{
+		printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		printf("Ime:%s	Prezime:%s	Godina rodjena:%d\n", surname->ime, surname->prezime,surname->godine);
+		printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	
+	}
+
+	printf("Koji element zelite izbrisati iz vezane liste:");
+	scanf(" %d",&br_osoba);
+	DeleteAfter(head,br_osoba);
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	printf("Ispis nakon brisanja:\n");
+	PrintList(head->next);
+	printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+
+	DeleteAll(head);
+
+
+	return EXIT_SUCCESS;
 }
 
-int prependList(Person* HEAD, Person* element)
+int PrependList(Position head, char* ime, char* prezime, int godine)
 {
+	Position newPerson = NULL;
 
-    element->next = HEAD->next;
-    HEAD->next = element;
+	newPerson = CreatePerson(ime,prezime,godine);
 
-    return 0;
+	if (!newPerson)
+	{
+		return -1;
+	}
+
+	InsertAfter(head,newPerson);
+
+
+
+	return EXIT_SUCCESS;
 }
 
-int print(Person* HEAD)
+Position CreatePerson(char* ime, char* prezime, int godine)
 {
-    Person* P = HEAD->next;
+	Position newPerson = NULL;
 
-    while (P != NULL) {
-        printf("Ime: %s\nPrezime: %s\nGodina rodenja: %d\n\n", P->name, P->surname, P->birthYear);
-        P = P->next;
-    }
+	newPerson = (Position)malloc(sizeof(Person));
+	if (!newPerson)
+	{
+		perror("Allocation ERROR!");
+		return NULL;
+	}
 
-    return 0;
+	strcpy(newPerson->ime,ime);
+	strcpy(newPerson->prezime,prezime);
+	newPerson->godine = godine;
+	newPerson->next = NULL;
+
+	return newPerson;
 }
 
-int insertLast(Person* HEAD, Person* element)
+int InsertAfter(Position head, Position newPerson)
 {
-    Person* P = findLastElement(HEAD);
+	newPerson->next = head->next;
+	head->next = newPerson;
 
-    element->next = NULL;
-    P->next = element;
 
-    return 0;
+	return EXIT_SUCCESS;
 }
 
-Person* findElement(Person* HEAD, char* prezime)
+int PrintList(Position head)
 {
-    Person* P = HEAD->next;
+	Position temp = head;
 
-    while (P != NULL && strcmp(P->surname, prezime)) {
-        P = P->next;
-    }
+	while (temp)
+	{
+		printf("Ime:%s	Prezime:%s	Godina rodjena:%d\n",temp->ime,temp->prezime,temp->godine);
+		temp = temp->next;
+	}
 
-    return P;
+	return EXIT_SUCCESS;
 }
 
-int removeElement(Person* HEAD, Person* element)
+int AppendList(Position head, char* ime, char* prezime, int godine)
 {
-    Person* P = HEAD;
+	Position newPerson = NULL;
+	Position last = NULL;
 
-    while (P != NULL && P->next != element) {
-        P = P->next;
-    }
+	newPerson = CreatePerson(ime, prezime, godine);
 
-    if (P == NULL)
-        return -1;
-    else
-    {
-        P->next = P->next->next;
-        free(element);
-    }
+	if (!newPerson)
+	{
+		return -1;
+	}
+	last = FindLast(head);
 
-    return 0;
+	InsertAfter(last, newPerson);
+
+	return EXIT_SUCCESS;
+}
+
+Position FindLast(Position head)
+{
+	Position temp = head;
+
+	while (temp->next)
+	{
+		temp = temp->next;
+	}
+
+
+	return temp;
+}
+
+Position FindBySurname(Position head, char* prezime)
+{
+	Position temp = head;
+	
+	while (temp)
+	{
+		if (strcmp(temp->prezime, prezime) == 0)
+		{
+			return temp;
+		}
+		temp = temp->next;
+	}
+
+
+	return temp;
+}
+
+int DeleteAfter(Position head, int n)
+{
+	Position temp1 = FindPrevious(head,n-1);
+	Position temp2 = NULL;
+
+	if (!temp1)
+	{
+		printf("Taj element ne postoji!");
+
+	}
+	else
+	{
+		temp2 = temp1 -> next;
+		temp1->next = temp2->next;
+		free(temp2);
+	}
+	return EXIT_SUCCESS;
+}
+
+Position FindPrevious(Position head, int poz)
+{
+	Position temp = head;
+
+	while (poz)
+	{
+		temp = temp->next;
+		if (!temp->next)
+		{
+			return NULL;
+		}
+		poz--;
+	}
+
+
+
+	return temp;
+}
+
+int DeleteAll(Position head)
+{
+	Position temp1 = head;
+	Position temp2 = NULL;
+
+	while (temp1->next)
+	{
+		temp2 = temp1->next;
+		temp1->next = temp2->next;
+		free(temp2);
+	}
+
+
+	return EXIT_SUCCESS;
 }
 
 
-Person* findLastElement(Person* HEAD)
-{
-    return findPrevoius(HEAD, NULL);
-}
 
-Person* findPrevoius(Person* HEAD, Person* element)
-{
-    Person* P = HEAD;
 
-    while (P != NULL && P->next != element)
-        P = P->next;
 
-    return P;
-}
+
+
