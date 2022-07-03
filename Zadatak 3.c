@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,49 +18,56 @@ typedef struct _Person {
 int ReadFromFile(Pozicija head, char* filename);
 Pozicija CreatePerson(char* name, char* surname, int birthYear);
 int SortList(Pozicija head,Pozicija newPerson);
-int InsertAfter(Pozicija head, Pozicija newPerson);
+int InsertAfter(Pozicija head,Pozicija newPerson);
 int PrintList(Pozicija first);
-int AddElement(Pozicija head, int n);
-Pozicija FindBefore(Pozicija head, int n);
-int WriteInFile(Pozicija head, char* filename);
+int AddEl(Pozicija head,int  n);
+Pozicija FindBefore(Pozicija head,int n);
+int WriteInFile(Pozicija head,char* filename);
 int FreeAll(Pozicija head);
-
-
 
 int main()
 {
-	Person zeroth = { .next = NULL, .name = {0}, .surname = {0}, .birthYear=0 };
+	Person zeroth = { .next = NULL, .name = {0}, .surname = {0}, .birthYear = 0 };
 	Pozicija head = &zeroth;
-	char filename = { 0 };
+	char filename[MAX_SIZE] = { 0 };
 	int n = 0;
 
+
 	printf("From what file you want to read data:\n");
-	scanf(" %s",filename);
-	ReadFromFile(head,filename);
+	scanf(" %s", filename);
+	ReadFromFile(head, filename);
 
-	printf("Print after reading and sorting elements:\n");
+	printf("Ispis nakon sortiranja:\n\n");
 	PrintList(head->next);
 
-	printf("After what element do you want to add an element?\n");
-	scanf(" %d", &n);
-	AddElement(head, n);
+	printf("\nNakon kojeg elementa zelite dodati element:");
+	scanf("%d",&n);
+	AddEl(head,n);
+
+	printf("\nIspis nakon umetanja nakon:\n");
 	PrintList(head->next);
 
 
-	printf("Before what element do you want to add an element?\n");
-	scanf(" %d", &n);
-	AddElement(head, n - 1);
+	printf("\nIspred kojeg elementa zelite dodati element:");
+	scanf("%d", &n);
+	AddEl(head, n-1);
+
+	printf("\nIspis nakon umetanja ispred:\n");
 	PrintList(head->next);
 
-	WriteInFile(head, filename);
+
+	printf("Ime datoteke u koju zelite upisati:\n");
+	scanf(" %s", filename);
+	WriteInFile(head->next, filename);
+
+	printf("\nUSPJESAN UPIS U DATOTEKU!\n");
 
 	FreeAll(head);
+	printf("\nUspjesno brisanje memorije\n");
 
+	
 
-
-
-
-
+	
 	return EXIT_SUCCESS;
 }
 
@@ -72,7 +80,7 @@ int ReadFromFile(Pozicija head, char* filename)
 	char* BUFFER[MAX_SIZE] = { 0 };
 
 	FILE* fp = NULL;
-	fp = fopen(filename,"r");
+	fp = fopen(filename, "r");
 
 	if (!fp)
 	{
@@ -82,10 +90,10 @@ int ReadFromFile(Pozicija head, char* filename)
 
 	while (!feof(fp))
 	{
-		fgets(BUFFER,MAX_LINE,fp);
+		fgets(BUFFER, MAX_LINE, fp);
 		if (sscanf(BUFFER, " %s %s %d", name, surname, &birthYear) == 3)
 		{
-			newPerson = CreatePerson(name,surname,birthYear);
+			newPerson = CreatePerson(name, surname, birthYear);
 			SortList(head, newPerson);
 		}
 
@@ -108,14 +116,15 @@ Pozicija CreatePerson(char* name, char* surname, int birthYear)
 		return NULL;
 	}
 
-	strcpy(newPerson->name,name);
-	strcpy(newPerson->surname,surname);
+	strcpy(newPerson->name, name);
+	strcpy(newPerson->surname, surname);
 	newPerson->birthYear = birthYear;
 	newPerson->next = NULL;
 
 
 	return newPerson;
 }
+
 
 int SortList(Pozicija head, Pozicija newPerson)
 {
@@ -134,19 +143,19 @@ int SortList(Pozicija head, Pozicija newPerson)
 			{
 				if (strcmp(newPerson->surname, temp->surname) >= 0 && strcmp(newPerson->surname, temp->next->surname) < 0)
 				{
-					InsertAfter(temp,newPerson);
+					InsertAfter(temp, newPerson);
 					return EXIT_SUCCESS;
 				}
 				temp = temp->next;
 			}
 			if (!temp->next)
 			{
-				InsertAfter(temp,newPerson);
+				InsertAfter(temp, newPerson);
 			}
 		}
 		else
 		{
-			InsertAfter(head,newPerson);
+			InsertAfter(head, newPerson);
 		}
 
 	}
@@ -168,6 +177,8 @@ int SortList(Pozicija head, Pozicija newPerson)
 	return EXIT_SUCCESS;
 }
 
+
+
 int InsertAfter(Pozicija head, Pozicija newPerson)
 {
 	newPerson->next = head->next;
@@ -184,9 +195,9 @@ int PrintList(Pozicija first)
 	{
 
 
-		printf("IME: %s", temp->name);
-		printf("PREZIME: %s", temp->surname);
-		printf("GODINA RODENJA: %d", &temp->birthYear);
+		printf("IME: %s\n", temp->name);
+		printf("PREZIME: %s\n", temp->surname);
+		printf("GODINA RODENJA: %d\n\n", temp->birthYear);
 
 
 		temp = temp->next;
@@ -197,44 +208,33 @@ int PrintList(Pozicija first)
 	return EXIT_SUCCESS;
 }
 
-int AddElement(Pozicija head, int n)
+int AddEl(Pozicija head, int n)
 {
-	Pozicija personBefore = NULL;
 	Pozicija newPerson = NULL;
-	char* name[MAX_SIZE] = { 0 };
-	char* surname[MAX_SIZE] = { 0 };
-	int birthYear = 0;
+	Pozicija personBefore = NULL;
+	char* ime[MAX_SIZE] = { 0 };
+	char* prezime[MAX_SIZE] = { 0 };
+	int godine = 0;
 
-	if (n < 0)
-	{
-		printf("Illegal value!");
-		return EXIT_SUCCESS;
-	}
-
-	personBefore = FindBefore(head, n);
-
-	if (!personBefore)
-	{
-		perror("Element doesn't exist!\n");
-		return NULL;
-	}
-
+	printf("Unesite podatke:\n");
 	printf("IME:");
-	scanf(" %s",name);
+	scanf(" %s",ime);
 	printf("PREZIME:");
-	scanf(" %s", surname);
-	printf("GODINA RODJENA:");
-	scanf(" %d", &birthYear);
+	scanf(" %s", prezime);
+	printf("GODINE:");
+	scanf(" %d", &godine);
 
-	newPerson = CreatePerson(name,surname,birthYear);
+	personBefore = FindBefore(head,n);
+
+	newPerson = CreatePerson(ime,prezime,godine);
 
 	InsertAfter(personBefore,newPerson);
 
 
 
+
 	return EXIT_SUCCESS;
 }
-
 
 Pozicija FindBefore(Pozicija head, int n)
 {
@@ -243,32 +243,29 @@ Pozicija FindBefore(Pozicija head, int n)
 	while (n)
 	{
 		temp = temp->next;
-		if (!temp->next)
-		{
-			return NULL;
-		}
 		n--;
 	}
 
-
+	
 	return temp;
 }
+
 
 int WriteInFile(Pozicija head, char* filename)
 {
 	Pozicija temp = head;
 	FILE* fp = NULL;
-	fp = fopen(filename, "w");
+	fp = fopen(filename,"w");
 
 	if (!fp)
 	{
-		printf("Can't open a file!");
-		return -1;
+		printf("Nemoguce otvoriti datoteku.");
+		return NULL;
 	}
 
-	while (temp->next)
+	while (temp)
 	{
-		fprintf(fp," IME:%s\tPREZIME:%s\tGODINA RODJENA:%d\n",temp->name,temp->surname,temp->birthYear);
+		fprintf(fp," IME:%s\tPREZIME:%s\tGODINE:%d\n",temp->name,temp->surname,temp->birthYear);
 		temp = temp->next;
 	}
 	fclose(fp);
@@ -288,10 +285,15 @@ int FreeAll(Pozicija head)
 		temp1->next = temp2->next;
 		free(temp2);
 	}
-	
 
 	return EXIT_SUCCESS;
 }
+
+
+
+
+
+
 
 
 
