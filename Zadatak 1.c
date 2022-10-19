@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,32 +7,33 @@
 #define MAX_LINE (1024)
 #define MAX_BODOVI (20)
 
-typedef struct {
+typedef struct _student;
+typedef struct _student {
 	char ime[MAX_SIZE];
 	char prezime[MAX_SIZE];
 	int bodovi;
-}student;
+}Student;
 
 int BrojStudenata(char* ime_datoteke);
-student* Alokacija(int br_st,char* ime_datoteke);
-student MaxBodovi(student* studenti,int br_st);
-int Ispis(int br_st,student* studenti);
+Student* Alokacija(int br_st, char* ime_datoteke);
+Student MaxBodovi(Student* studenti, int br_st);
+int Ispis(int br_st, Student* studenti);
 
 
 int main()
 {
-	char* studenti = NULL;
+	char filename[MAX_SIZE] = "studenti.txt";
 	int brojac = 0;
 	int br_st = 0;
-	student* stud = NULL;
-	student s;
+	Student* stud = NULL;
+	Student s = { .bodovi = 0,.ime = "",.prezime = "" };
 
-	br_st = BrojStudenata(studenti);
-	stud = Alokacija(br_st, studenti);
-	s = MaxBodovi(stud,br_st);
+	br_st = BrojStudenata(filename);
+	stud = Alokacija(br_st, filename);
+	s = MaxBodovi(stud, br_st);
 
-	Ispis(br_st,stud);
-	
+	Ispis(br_st, stud);
+
 
 	return EXIT_SUCCESS;
 }
@@ -39,20 +41,23 @@ int main()
 
 int BrojStudenata(char* ime_datoteke)
 {
-	char BUFFER[MAX_LINE] = { 0 };
+	char BUFFER[MAX_LINE] = "";
 	FILE* datoteka = NULL;
 	int brojac = 0;
-	datoteka = fopen("studenti.txt","r");
+	datoteka = fopen(ime_datoteke, "r");
 
 	if (!datoteka)
 	{
-		printf("Datoteka nije otovorena!");
-		return;
+		printf("Datoteka nije otvorena!");
+		return -1;
 	}
 
 	while (!feof(datoteka)) {
-		fgets(BUFFER,MAX_LINE,datoteka);
-		brojac++;
+		fgets(BUFFER, MAX_LINE, datoteka);
+		if (strcmp("\n", BUFFER) != 0)
+		{
+			brojac++;
+		}
 	}
 	fclose(datoteka);
 
@@ -60,13 +65,15 @@ int BrojStudenata(char* ime_datoteke)
 	return brojac;
 }
 
-student* Alokacija(int br_st, char* ime_datoteke)
+Student* Alokacija(int br_st, char* ime_datoteke)
 {
-	int brojac=0;
-	student* studenti = NULL;
+	int brojac = 0;
+	Student* studenti = NULL;
+
 	FILE* datoteka = NULL;
-	datoteka = fopen("studenti.txt","r");
-	studenti = (student*)malloc(br_st * (sizeof(student)));	
+	datoteka = fopen(ime_datoteke, "r");
+
+	studenti = (Student*)malloc(br_st * (sizeof(Student)));
 
 	if (!datoteka)
 	{
@@ -81,7 +88,7 @@ student* Alokacija(int br_st, char* ime_datoteke)
 
 	while (!feof(datoteka))
 	{
-		fscanf(datoteka," %s %s %lf",studenti[brojac].ime,studenti[brojac].prezime,&studenti[brojac].bodovi);
+		fscanf(datoteka, " %s %s %d", studenti[brojac].ime, studenti[brojac].prezime, &studenti[brojac].bodovi);
 		brojac++;
 	}
 
@@ -91,13 +98,12 @@ student* Alokacija(int br_st, char* ime_datoteke)
 	return studenti;
 }
 
-student MaxBodovi(student* studenti, int br_st)
+Student MaxBodovi(Student* studenti, int br_st)
 {
-	student temp = { 0 };
+	Student temp = studenti[0];
 	int i = 0;
 
-	temp = studenti[0];
-	for (i=1; i < br_st; i++) 
+	for (i = 1; i < br_st; i++)
 	{
 		if (temp.bodovi < studenti[i].bodovi)
 			temp = studenti[i];
@@ -106,22 +112,19 @@ student MaxBodovi(student* studenti, int br_st)
 	return temp;
 }
 
-int Ispis(int br_st, student* studenti)
+int Ispis(int br_st, Student* studenti)
 {
 	int i = 0;
-	double relativni = 0;
-
-
+	double relativni = 0.0;
 
 	while (i < br_st)
 	{
-		relativni = (studenti[i].bodovi / MAX_BODOVI) * 100;
-		printf("\nIme: %s \nPrezime: %s \nApsolutni broj bodova: %.2lf \nRelativni broj bodova: %.2lf \n\n", studenti[i].ime, studenti[i].prezime, studenti[i].bodovi, relativni);
+		relativni = (((double)studenti[i].bodovi / MAX_BODOVI) * 100);
+		printf("Ime: %s \nPrezime: %s \nApsolutni broj bodova: %d \nRelativni broj bodova: %.2lf \n\n", studenti[i].ime, studenti[i].prezime, studenti[i].bodovi, relativni);
 		i++;
 	}
-	
-	return EXIT_SUCCESS;
 
+	return EXIT_SUCCESS;
 }
 
 
