@@ -15,7 +15,7 @@ typedef struct {
 int BrojStudenata(char* ime_datoteke);
 student* Alokacija(int br_st,char* ime_datoteke);
 student MaxBodovi(student* studenti,int br_st);
-void Ispis(int br_st,student* studenti);
+int Ispis(int br_st,student* studenti);
 
 
 int main()
@@ -106,7 +106,7 @@ student MaxBodovi(student* studenti, int br_st)
 	return temp;
 }
 
-void Ispis(int br_st, student* studenti)
+int Ispis(int br_st, student* studenti)
 {
 	int i = 0;
 	double relativni = 0;
@@ -119,6 +119,8 @@ void Ispis(int br_st, student* studenti)
 		printf("\nIme: %s \nPrezime: %s \nApsolutni broj bodova: %.2lf \nRelativni broj bodova: %.2lf \n\n", studenti[i].ime, studenti[i].prezime, studenti[i].bodovi, relativni);
 		i++;
 	}
+	
+	return EXIT_SUCCESS;
 
 }
 
